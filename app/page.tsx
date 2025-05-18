@@ -4,8 +4,11 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { QuizCard } from "@/components/quiz/QuizCard";
+import { Timer } from "@/components/quiz/Timer";
 import { quizzes } from "@/data/quizzes";
 import { QuizState } from "@/types/quiz";
+
+const TIME_PER_QUESTION = 30; // 각 문제당 30초
 
 export default function Home() {
   const [quizState, setQuizState] = useState<QuizState>({
@@ -43,6 +46,34 @@ export default function Home() {
     }
   };
 
+  const handleTimeUp = () => {
+    // 이미 답변을 선택한 경우 무시
+    if (quizState.answers[quizState.currentQuestionIndex] !== undefined) {
+      return;
+    }
+
+    // 시간 초과 시 자동으로 다음 문제로
+    setQuizState(prev => {
+      const newAnswers = [...prev.answers, -1]; // -1은 시간 초과를 의미
+      
+      // 마지막 문제인 경우 퀴즈 완료
+      if (prev.currentQuestionIndex === quizzes.length - 1) {
+        return {
+          ...prev,
+          answers: newAnswers,
+          isComplete: true,
+        };
+      }
+
+      // 다음 문제로 이동
+      return {
+        ...prev,
+        currentQuestionIndex: prev.currentQuestionIndex + 1,
+        answers: newAnswers,
+      };
+    });
+  };
+
   const handleRestart = () => {
     setQuizState({
       currentQuestionIndex: 0,
@@ -71,7 +102,7 @@ export default function Home() {
   return (
     <div className="container max-w-2xl mx-auto p-4 min-h-screen">
       <div className="space-y-6">
-        <div className="space-y-2">
+        <div className="space-y-4">
           <div className="flex justify-between items-center">
             <h1 className="text-xl md:text-2xl font-bold">퀴즈</h1>
             <p className="text-sm md:text-base">
@@ -79,6 +110,12 @@ export default function Home() {
             </p>
           </div>
           <Progress value={progress} className="h-2" />
+          <Timer
+            duration={TIME_PER_QUESTION}
+            onTimeUp={handleTimeUp}
+            isActive={quizState.answers[quizState.currentQuestionIndex] === undefined}
+            questionId={currentQuiz.id}
+          />
         </div>
 
         <QuizCard
