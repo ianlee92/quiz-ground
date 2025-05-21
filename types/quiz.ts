@@ -11,4 +11,13 @@ export interface QuizState {
   score: number;
   answers: number[];
   isComplete: boolean;
+}
+
+export interface ScoreRecord {
+  id: string;
+  playerName: string;
+  score: number;
+  totalQuestions: number;
+  date: string;
+  timeSpent: number; // 초 단위
 } 

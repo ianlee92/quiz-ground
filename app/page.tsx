@@ -1,12 +1,15 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { QuizCard } from "@/components/quiz/QuizCard";
 import { Timer } from "@/components/quiz/Timer";
+import { ScoreBoard } from "@/components/quiz/ScoreBoard";
+import { Input } from "@/components/ui/input";
 import { quizzes } from "@/data/quizzes";
-import { QuizState } from "@/types/quiz";
+import { QuizState, ScoreRecord } from "@/types/quiz";
+import { saveScore, getScores } from "@/lib/score";
 
 const TIME_PER_QUESTION = 30; // 각 문제당 30초
 
@@ -17,6 +20,14 @@ export default function Home() {
     answers: [],
     isComplete: false,
   });
+  const [playerName, setPlayerName] = useState("");
+  const [scores, setScores] = useState<ScoreRecord[]>([]);
+  const [showRanking, setShowRanking] = useState(false);
+  const [startTime, setStartTime] = useState<number>(Date.now());
+
+  useEffect(() => {
+    setScores(getScores());
+  }, []);
 
   const currentQuiz = quizzes[quizState.currentQuestionIndex];
   const progress = (quizState.currentQuestionIndex / quizzes.length) * 100;
@@ -81,19 +92,66 @@ export default function Home() {
       answers: [],
       isComplete: false,
     });
+    setPlayerName("");
+    setStartTime(Date.now());
+    setShowRanking(false);
   };
+
+  const handleSaveScore = () => {
+    if (!playerName.trim()) return;
+    
+    const timeSpent = Math.floor((Date.now() - startTime) / 1000);
+    const newScore = saveScore({
+      playerName: playerName.trim(),
+      score: quizState.score,
+      totalQuestions: quizzes.length,
+      date: new Date().toISOString(),
+      timeSpent,
+    });
+    
+    setScores(prev => [...prev, newScore]);
+    setShowRanking(true);
+  };
+
+  if (showRanking) {
+    return (
+      <div className="container max-w-2xl mx-auto p-4 min-h-screen">
+        <div className="space-y-6">
+          <ScoreBoard scores={scores} />
+          <div className="flex justify-center">
+            <Button onClick={handleRestart} size="lg">
+              다시 시작하기
+            </Button>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   if (quizState.isComplete) {
     return (
       <div className="container max-w-2xl mx-auto p-4 min-h-screen flex flex-col items-center justify-center">
-        <div className="text-center space-y-4">
+        <div className="text-center space-y-6">
           <h1 className="text-2xl md:text-3xl font-bold">퀴즈 완료!</h1>
           <p className="text-xl md:text-2xl">
             최종 점수: {quizState.score} / {quizzes.length}
           </p>
-          <Button onClick={handleRestart} size="lg">
-            다시 시작하기
-          </Button>
+          <div className="space-y-4">
+            <Input
+              placeholder="이름을 입력하세요"
+              value={playerName}
+              onChange={(e) => setPlayerName(e.target.value)}
+              className="max-w-xs mx-auto"
+            />
+            <div className="flex gap-4 justify-center">
+              <Button onClick={handleSaveScore} size="lg" disabled={!playerName.trim()}>
+                점수 저장하기
+              </Button>
+              <Button onClick={handleRestart} size="lg" variant="outline">
+                다시 시작하기
+              </Button>
+            </div>
+          </div>
         </div>
       </div>
     );
