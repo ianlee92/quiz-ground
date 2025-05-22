@@ -1,31 +1,34 @@
-import { ScoreRecord } from "@/types/quiz";
+import { supabase } from './supabase'
+import { ScoreRecord } from '@/types/quiz'
 
-const STORAGE_KEY = "quiz_scores";
+export async function saveScore(score: ScoreRecord): Promise<ScoreRecord> {
+  const { data, error } = await supabase
+    .from('scores')
+    .insert([score])
+    .select()
+    .single()
 
-export function saveScore(score: Omit<ScoreRecord, "id">): ScoreRecord {
-  const scores = getScores();
-  const newScore: ScoreRecord = {
-    ...score,
-    id: crypto.randomUUID(),
-  };
-  
-  scores.push(newScore);
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(scores));
-  
-  return newScore;
+  if (error) {
+    console.error('Error saving score:', error)
+    throw error
+  }
+
+  return data
 }
 
-export function getScores(): ScoreRecord[] {
-  if (typeof window === "undefined") return [];
-  
-  const scores = localStorage.getItem(STORAGE_KEY);
-  if (!scores) return [];
-  
-  try {
-    return JSON.parse(scores);
-  } catch {
-    return [];
+export async function getScores(): Promise<ScoreRecord[]> {
+  const { data, error } = await supabase
+    .from('scores')
+    .select('*')
+    .order('score', { ascending: false })
+    .limit(10)
+
+  if (error) {
+    console.error('Error fetching scores:', error)
+    throw error
   }
+
+  return data || []
 }
 
 export function clearScores(): void {

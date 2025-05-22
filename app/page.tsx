@@ -10,6 +10,7 @@ import { Input } from "@/components/ui/input";
 import { quizzes } from "@/data/quizzes";
 import { QuizState, ScoreRecord } from "@/types/quiz";
 import { saveScore, getScores } from "@/lib/score";
+import { toast } from "sonner";
 
 const TIME_PER_QUESTION = 30; // 각 문제당 30초
 
@@ -26,7 +27,16 @@ export default function Home() {
   const [startTime, setStartTime] = useState<number>(Date.now());
 
   useEffect(() => {
-    setScores(getScores());
+    const loadScores = async () => {
+      try {
+        const loadedScores = await getScores();
+        setScores(loadedScores);
+      } catch (error) {
+        console.error('Error loading scores:', error);
+        toast.error('점수를 불러오는데 실패했습니다.');
+      }
+    };
+    loadScores();
   }, []);
 
   const currentQuiz = quizzes[quizState.currentQuestionIndex];
@@ -97,20 +107,26 @@ export default function Home() {
     setShowRanking(false);
   };
 
-  const handleSaveScore = () => {
+  const handleSaveScore = async () => {
     if (!playerName.trim()) return;
     
-    const timeSpent = Math.floor((Date.now() - startTime) / 1000);
-    const newScore = saveScore({
-      playerName: playerName.trim(),
-      score: quizState.score,
-      totalQuestions: quizzes.length,
-      date: new Date().toISOString(),
-      timeSpent,
-    });
-    
-    setScores(prev => [...prev, newScore]);
-    setShowRanking(true);
+    try {
+      const timeSpent = Math.floor((Date.now() - startTime) / 1000);
+      const newScore = await saveScore({
+        playerName: playerName.trim(),
+        score: quizState.score,
+        totalQuestions: quizzes.length,
+        date: new Date().toISOString(),
+        timeSpent,
+      });
+      
+      setScores(prev => [...prev, newScore]);
+      setShowRanking(true);
+      toast.success('점수가 저장되었습니다!');
+    } catch (error) {
+      console.error('Error saving score:', error);
+      toast.error('점수 저장에 실패했습니다.');
+    }
   };
 
   if (showRanking) {
