@@ -7,9 +7,9 @@ import { QuizCard } from "@/components/quiz/QuizCard";
 import { Timer } from "@/components/quiz/Timer";
 import { ScoreBoard } from "@/components/quiz/ScoreBoard";
 import { Input } from "@/components/ui/input";
-import { quizzes } from "@/data/quizzes";
-import { QuizState, ScoreRecord } from "@/types/quiz";
+import { QuizState, ScoreRecord, Quiz } from "@/types/quiz";
 import { saveScore, getScores } from "@/lib/score";
+import { getQuizzes } from "@/lib/quiz";
 import { toast } from "sonner";
 
 const TIME_PER_QUESTION = 30; // 각 문제당 30초
@@ -25,19 +25,47 @@ export default function Home() {
   const [scores, setScores] = useState<ScoreRecord[]>([]);
   const [showRanking, setShowRanking] = useState(false);
   const [startTime, setStartTime] = useState<number>(Date.now());
+  const [quizzes, setQuizzes] = useState<Quiz[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    const loadScores = async () => {
+    const loadData = async () => {
       try {
-        const loadedScores = await getScores();
+        const [loadedScores, loadedQuizzes] = await Promise.all([
+          getScores(),
+          getQuizzes()
+        ]);
         setScores(loadedScores);
+        setQuizzes(loadedQuizzes);
       } catch (error) {
-        console.error('Error loading scores:', error);
-        toast.error('점수를 불러오는데 실패했습니다.');
+        console.error('Error loading data:', error);
+        toast.error('데이터를 불러오는데 실패했습니다.');
+      } finally {
+        setIsLoading(false);
       }
     };
-    loadScores();
+    loadData();
   }, []);
+
+  if (isLoading) {
+    return (
+      <div className="container max-w-2xl mx-auto p-4 min-h-screen flex items-center justify-center">
+        <div className="text-center">
+          <h2 className="text-xl font-semibold">로딩 중...</h2>
+        </div>
+      </div>
+    );
+  }
+
+  if (quizzes.length === 0) {
+    return (
+      <div className="container max-w-2xl mx-auto p-4 min-h-screen flex items-center justify-center">
+        <div className="text-center">
+          <h2 className="text-xl font-semibold">퀴즈가 없습니다.</h2>
+        </div>
+      </div>
+    );
+  }
 
   const currentQuiz = quizzes[quizState.currentQuestionIndex];
   const progress = (quizState.currentQuestionIndex / quizzes.length) * 100;

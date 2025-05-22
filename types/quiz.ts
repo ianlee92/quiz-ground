@@ -1,9 +1,10 @@
 export interface Quiz {
-  id: number;
+  id: string;
   question: string;
   options: string[];
   correctAnswer: number;
   explanation: string;
+  created_at?: string;
 }
 
 export interface QuizState {
@@ -20,4 +21,5 @@ export interface ScoreRecord {
   totalQuestions: number;
   date: string;
   timeSpent: number; // 초 단위
+  created_at?: string;
 } 
