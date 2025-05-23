@@ -10,7 +10,7 @@ export function ScoreBoard({ scores }: ScoreBoardProps) {
   const sortedScores = [...scores].sort((a, b) => {
     // 점수가 같으면 시간이 적은 순으로 정렬
     if (a.score === b.score) {
-      return a.timeSpent - b.timeSpent;
+      return a.time_spent - b.time_spent;
     }
     return b.score - a.score;
   });
@@ -35,7 +35,7 @@ export function ScoreBoard({ scores }: ScoreBoardProps) {
                   {index + 1}
                 </div>
                 <div>
-                  <p className="font-medium">{score.playerName}</p>
+                  <p className="font-medium">{score.player_name}</p>
                   <p className="text-sm text-muted-foreground">
                     {new Date(score.date).toLocaleDateString()}
                   </p>
@@ -43,10 +43,10 @@ export function ScoreBoard({ scores }: ScoreBoardProps) {
               </div>
               <div className="text-right">
                 <p className="font-bold text-lg">
-                  {score.score} / {score.totalQuestions}
+                  {score.score} / {score.total_questions}
                 </p>
                 <p className="text-sm text-muted-foreground">
-                  {Math.floor(score.timeSpent / 60)}분 {score.timeSpent % 60}초
+                  {Math.floor(score.time_spent / 60)}분 {score.time_spent % 60}초
                 </p>
               </div>
             </div>

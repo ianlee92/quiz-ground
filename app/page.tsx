@@ -71,7 +71,7 @@ export default function Home() {
   const progress = (quizState.currentQuestionIndex / quizzes.length) * 100;
 
   const handleAnswerSelect = (answerIndex: number) => {
-    const isCorrect = answerIndex === currentQuiz.correctAnswer;
+    const isCorrect = answerIndex === currentQuiz.correct_answer;
     const newScore = isCorrect ? quizState.score + 1 : quizState.score;
     
     setQuizState(prev => ({
@@ -141,11 +141,11 @@ export default function Home() {
     try {
       const timeSpent = Math.floor((Date.now() - startTime) / 1000);
       const newScore = await saveScore({
-        playerName: playerName.trim(),
+        player_name: playerName.trim(),
         score: quizState.score,
-        totalQuestions: quizzes.length,
+        total_questions: quizzes.length,
         date: new Date().toISOString(),
-        timeSpent,
+        time_spent: timeSpent,
       });
       
       setScores(prev => [...prev, newScore]);

@@ -18,7 +18,10 @@ export async function getQuizzes(): Promise<Quiz[]> {
 export async function addQuiz(quiz: Omit<Quiz, 'id' | 'created_at'>): Promise<Quiz> {
   const { data, error } = await supabase
     .from('quizzes')
-    .insert([quiz])
+    .insert([{
+      ...quiz,
+      correct_answer: quiz.correct_answer
+    }])
     .select()
     .single()
 
@@ -33,7 +36,10 @@ export async function addQuiz(quiz: Omit<Quiz, 'id' | 'created_at'>): Promise<Qu
 export async function updateQuiz(id: string, quiz: Partial<Quiz>): Promise<Quiz> {
   const { data, error } = await supabase
     .from('quizzes')
-    .update(quiz)
+    .update({
+      ...quiz,
+      correct_answer: quiz.correct_answer
+    })
     .eq('id', id)
     .select()
     .single()

@@ -16,7 +16,7 @@ export default function AdminPage() {
   const [formData, setFormData] = useState({
     question: "",
     options: ["", "", "", ""],
-    correctAnswer: 0,
+    correct_answer: 0,
     explanation: "",
   });
 
@@ -49,7 +49,7 @@ export default function AdminPage() {
       setFormData({
         question: "",
         options: ["", "", "", ""],
-        correctAnswer: 0,
+        correct_answer: 0,
         explanation: "",
       });
       setEditingQuiz(null);
@@ -65,7 +65,7 @@ export default function AdminPage() {
     setFormData({
       question: quiz.question,
       options: quiz.options,
-      correctAnswer: quiz.correctAnswer,
+      correct_answer: quiz.correct_answer,
       explanation: quiz.explanation,
     });
   };
@@ -132,8 +132,8 @@ export default function AdminPage() {
             <div>
               <label className="block text-sm font-medium mb-1">정답</label>
               <select
-                value={formData.correctAnswer}
-                onChange={(e) => setFormData({ ...formData, correctAnswer: Number(e.target.value) })}
+                value={formData.correct_answer}
+                onChange={(e) => setFormData({ ...formData, correct_answer: Number(e.target.value) })}
                 className="w-full p-2 border rounded"
                 required
               >
@@ -167,7 +167,7 @@ export default function AdminPage() {
                     setFormData({
                       question: "",
                       options: ["", "", "", ""],
-                      correctAnswer: 0,
+                      correct_answer: 0,
                       explanation: "",
                     });
                   }}
@@ -188,7 +188,7 @@ export default function AdminPage() {
                 <div className="space-y-2">
                   <h3 className="font-semibold">{quiz.question}</h3>
                   <div className="text-sm text-gray-500">
-                    정답: {quiz.options[quiz.correctAnswer]}
+                    정답: {quiz.options[quiz.correct_answer]}
                   </div>
                 </div>
                 <div className="flex gap-2">

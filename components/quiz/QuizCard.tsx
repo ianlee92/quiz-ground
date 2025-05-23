@@ -12,7 +12,7 @@ interface QuizCardProps {
 }
 
 export function QuizCard({ quiz, selectedAnswer, onAnswerSelect, showExplanation }: QuizCardProps) {
-  const isCorrect = selectedAnswer === quiz.correctAnswer;
+  const isCorrect = selectedAnswer === quiz.correct_answer;
 
   return (
     <Card className="w-full max-w-2xl mx-auto">

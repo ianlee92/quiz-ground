@@ -2,7 +2,7 @@ export interface Quiz {
   id: string;
   question: string;
   options: string[];
-  correctAnswer: number;
+  correct_answer: number;
   explanation: string;
   created_at?: string;
 }
@@ -15,11 +15,11 @@ export interface QuizState {
 }
 
 export interface ScoreRecord {
-  id: string;
-  playerName: string;
+  id?: string;
+  player_name: string;
   score: number;
-  totalQuestions: number;
+  total_questions: number;
   date: string;
-  timeSpent: number; // 초 단위
+  time_spent: number;
   created_at?: string;
 } 
