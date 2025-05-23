@@ -36,8 +36,15 @@ export default function Home() {
           getScores(),
           getQuizzes()
         ]);
+        
+        // Filter quizzes for today and active ones
+        const today = new Date().toISOString().split('T')[0]; // YYYY-MM-DD format
+        const todayQuizzes = loadedQuizzes.filter(quiz => 
+          quiz.available_date === today && quiz.is_active
+        );
+        
         setScores(loadedScores);
-        setQuizzes(loadedQuizzes);
+        setQuizzes(todayQuizzes);
       } catch (error) {
         console.error('Error loading data:', error);
         toast.error('데이터를 불러오는데 실패했습니다.');
@@ -164,9 +171,14 @@ export default function Home() {
         time_spent: timeSpent,
       });
       
-      setScores(prev => [...prev, newScore]);
+      if (newScore) {
+        setScores(prev => [...prev, newScore]);
+        toast.success('점수가 저장되었습니다!');
+      } else {
+        toast.info('이미 더 좋은 기록이 있습니다.');
+      }
+      
       setShowRanking(true);
-      toast.success('점수가 저장되었습니다!');
     } catch (error) {
       console.error('Error saving score:', error);
       toast.error('점수 저장에 실패했습니다.');
