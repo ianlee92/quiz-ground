@@ -18,10 +18,7 @@ export async function getQuizzes(): Promise<Quiz[]> {
 export async function addQuiz(quiz: Omit<Quiz, 'id' | 'created_at'>): Promise<Quiz> {
   const { data, error } = await supabase
     .from('quizzes')
-    .insert([{
-      ...quiz,
-      correct_answer: quiz.correct_answer
-    }])
+    .insert([quiz])
     .select()
     .single()
 
@@ -30,16 +27,17 @@ export async function addQuiz(quiz: Omit<Quiz, 'id' | 'created_at'>): Promise<Qu
     throw error
   }
 
+  if (!data) {
+    throw new Error('Failed to create quiz')
+  }
+
   return data
 }
 
 export async function updateQuiz(id: string, quiz: Partial<Quiz>): Promise<Quiz> {
   const { data, error } = await supabase
     .from('quizzes')
-    .update({
-      ...quiz,
-      correct_answer: quiz.correct_answer
-    })
+    .update(quiz)
     .eq('id', id)
     .select()
     .single()
@@ -47,6 +45,10 @@ export async function updateQuiz(id: string, quiz: Partial<Quiz>): Promise<Quiz>
   if (error) {
     console.error('Error updating quiz:', error)
     throw error
+  }
+
+  if (!data) {
+    throw new Error('Quiz not found')
   }
 
   return data

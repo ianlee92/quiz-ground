@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Switch } from "@/components/ui/switch";
 import { Quiz } from "@/types/quiz";
 import { getQuizzes, addQuiz, updateQuiz, deleteQuiz } from "@/lib/quiz";
 import { toast } from "sonner";
@@ -18,6 +19,8 @@ export default function AdminPage() {
     options: ["", "", "", ""],
     correct_answer: 0,
     explanation: "",
+    available_date: new Date().toISOString().split('T')[0],
+    is_active: true,
   });
 
   useEffect(() => {
@@ -38,6 +41,23 @@ export default function AdminPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    // Validate form data
+    if (!formData.question.trim()) {
+      toast.error('문제를 입력해주세요.');
+      return;
+    }
+    
+    if (formData.options.some(option => !option.trim())) {
+      toast.error('모든 보기를 입력해주세요.');
+      return;
+    }
+    
+    if (!formData.explanation.trim()) {
+      toast.error('설명을 입력해주세요.');
+      return;
+    }
+
     try {
       if (editingQuiz) {
         await updateQuiz(editingQuiz.id, formData);
@@ -46,14 +66,18 @@ export default function AdminPage() {
         await addQuiz(formData);
         toast.success('퀴즈가 추가되었습니다.');
       }
+      
+      // Reset form and refresh quizzes
       setFormData({
         question: "",
         options: ["", "", "", ""],
         correct_answer: 0,
         explanation: "",
+        available_date: new Date().toISOString().split('T')[0],
+        is_active: true,
       });
       setEditingQuiz(null);
-      loadQuizzes();
+      await loadQuizzes();
     } catch (error) {
       console.error('Error saving quiz:', error);
       toast.error('퀴즈 저장에 실패했습니다.');
@@ -67,7 +91,36 @@ export default function AdminPage() {
       options: quiz.options,
       correct_answer: quiz.correct_answer,
       explanation: quiz.explanation,
+      available_date: quiz.available_date,
+      is_active: quiz.is_active,
     });
+  };
+
+  const handleToggleActive = async (quiz: Quiz) => {
+    try {
+      await updateQuiz(quiz.id, {
+        is_active: !quiz.is_active
+      });
+      
+      // Optimistically update the UI
+      setQuizzes(prevQuizzes => 
+        prevQuizzes.map(q => 
+          q.id === quiz.id ? { ...q, is_active: !q.is_active } : q
+        )
+      );
+      
+      toast.success(`퀴즈가 ${!quiz.is_active ? '활성화' : '비활성화'} 되었습니다.`);
+    } catch (error) {
+      console.error('Error toggling quiz:', error);
+      toast.error('퀴즈 상태 변경에 실패했습니다.');
+      
+      // Revert the optimistic update
+      setQuizzes(prevQuizzes => 
+        prevQuizzes.map(q => 
+          q.id === quiz.id ? { ...q, is_active: quiz.is_active } : q
+        )
+      );
+    }
   };
 
   const handleDelete = async (id: string) => {
@@ -154,6 +207,27 @@ export default function AdminPage() {
               />
             </div>
             
+            <div className="flex items-center space-x-2">
+              <Switch
+                id="is_active"
+                checked={formData.is_active}
+                onCheckedChange={(checked) => setFormData({ ...formData, is_active: checked })}
+              />
+              <label htmlFor="is_active" className="text-sm font-medium">
+                퀴즈 활성화
+              </label>
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium mb-1">표시 날짜</label>
+              <Input
+                type="date"
+                value={formData.available_date}
+                onChange={(e) => setFormData({ ...formData, available_date: e.target.value })}
+                required
+              />
+            </div>
+            
             <div className="flex gap-2">
               <Button type="submit">
                 {editingQuiz ? '수정하기' : '추가하기'}
@@ -169,6 +243,8 @@ export default function AdminPage() {
                       options: ["", "", "", ""],
                       correct_answer: 0,
                       explanation: "",
+                      available_date: new Date().toISOString().split('T')[0],
+                      is_active: true,
                     });
                   }}
                 >
@@ -186,9 +262,24 @@ export default function AdminPage() {
             <CardContent className="p-4">
               <div className="flex justify-between items-start">
                 <div className="space-y-2">
-                  <h3 className="font-semibold">{quiz.question}</h3>
+                  <div className="flex items-center gap-2">
+                    <h3 className="font-semibold">{quiz.question}</h3>
+                    <div className="flex items-center space-x-2">
+                      <Switch
+                        id={`active-${quiz.id}`}
+                        checked={quiz.is_active}
+                        onCheckedChange={() => handleToggleActive(quiz)}
+                      />
+                      <label htmlFor={`active-${quiz.id}`} className="text-sm text-gray-500">
+                        {quiz.is_active ? '활성화' : '비활성화'}
+                      </label>
+                    </div>
+                  </div>
                   <div className="text-sm text-gray-500">
                     정답: {quiz.options[quiz.correct_answer]}
+                  </div>
+                  <div className="text-sm text-gray-500">
+                    표시 날짜: {quiz.available_date}
                   </div>
                 </div>
                 <div className="flex gap-2">

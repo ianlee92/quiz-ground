@@ -5,6 +5,8 @@ export interface Quiz {
   correct_answer: number;
   explanation: string;
   created_at?: string;
+  available_date: string; // YYYY-MM-DD format
+  is_active: boolean; // 퀴즈 활성화 여부
 }
 
 export interface QuizState {
