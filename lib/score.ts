@@ -1,7 +1,7 @@
 import { supabase } from './supabase'
 import { ScoreRecord } from '@/types/quiz'
 
-export async function saveScore(score: ScoreRecord): Promise<ScoreRecord> {
+export async function saveScore(score: Omit<ScoreRecord, 'id' | 'created_at'>): Promise<ScoreRecord> {
   const { data, error } = await supabase
     .from('scores')
     .insert([score])
@@ -29,8 +29,4 @@ export async function getScores(): Promise<ScoreRecord[]> {
   }
 
   return data || []
-}
-
-export function clearScores(): void {
-  localStorage.removeItem(STORAGE_KEY);
 } 

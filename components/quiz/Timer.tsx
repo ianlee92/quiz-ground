@@ -10,7 +10,7 @@ interface TimerProps {
 
 export function Timer({ duration, onTimeUp, isActive, questionId }: TimerProps) {
   const [timeLeft, setTimeLeft] = useState(duration);
-  const timerRef = useRef<NodeJS.Timeout>();
+  const timerRef = useRef<NodeJS.Timeout | undefined>(undefined);
   const hasTriggeredRef = useRef(false);
 
   const handleTick = useCallback(() => {
