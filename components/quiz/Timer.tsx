@@ -5,7 +5,7 @@ interface TimerProps {
   duration: number; // 초 단위
   onTimeUp: () => void;
   isActive: boolean;
-  questionId: number; // 문제 ID 추가
+  questionId: string; // Changed from number to string
 }
 
 export function Timer({ duration, onTimeUp, isActive, questionId }: TimerProps) {
