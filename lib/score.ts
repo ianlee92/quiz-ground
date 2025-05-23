@@ -17,11 +17,16 @@ export async function saveScore(score: Omit<ScoreRecord, 'id' | 'created_at'>): 
 }
 
 export async function getScores(): Promise<ScoreRecord[]> {
+  // 12시간 전의 시간을 계산
+  const twelveHoursAgo = new Date()
+  twelveHoursAgo.setHours(twelveHoursAgo.getHours() - 12)
+
   const { data, error } = await supabase
     .from('scores')
     .select('*')
+    .gte('date', twelveHoursAgo.toISOString()) // 12시간 이내의 점수만 가져오기
     .order('score', { ascending: false })
-    .limit(10)
+    .order('time_spent', { ascending: true })
 
   if (error) {
     console.error('Error fetching scores:', error)

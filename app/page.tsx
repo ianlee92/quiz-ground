@@ -6,22 +6,23 @@ import { Progress } from "@/components/ui/progress";
 import { QuizCard } from "@/components/quiz/QuizCard";
 import { Timer } from "@/components/quiz/Timer";
 import { ScoreBoard } from "@/components/quiz/ScoreBoard";
-import { Input } from "@/components/ui/input";
 import { QuizState, ScoreRecord, Quiz } from "@/types/quiz";
 import { saveScore, getScores } from "@/lib/score";
 import { getQuizzes } from "@/lib/quiz";
 import { toast } from "sonner";
+import { useAuth } from "@/lib/auth-context";
+import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 
 const TIME_PER_QUESTION = 30; // 각 문제당 30초
 
 export default function Home() {
+  const { user } = useAuth();
   const [quizState, setQuizState] = useState<QuizState>({
     currentQuestionIndex: 0,
     score: 0,
     answers: [],
     isComplete: false,
   });
-  const [playerName, setPlayerName] = useState("");
   const [scores, setScores] = useState<ScoreRecord[]>([]);
   const [showRanking, setShowRanking] = useState(false);
   const [startTime, setStartTime] = useState<number>(Date.now());
@@ -88,10 +89,8 @@ export default function Home() {
         currentQuestionIndex: prev.currentQuestionIndex + 1,
       }));
     } else {
-      setQuizState(prev => ({
-        ...prev,
-        isComplete: true,
-      }));
+      // 퀴즈 완료 시 바로 점수 저장 및 랭킹 표시
+      handleSaveScore();
     }
   };
 
@@ -107,6 +106,7 @@ export default function Home() {
       
       // 마지막 문제인 경우 퀴즈 완료
       if (prev.currentQuestionIndex === quizzes.length - 1) {
+        handleSaveScore();
         return {
           ...prev,
           answers: newAnswers,
@@ -130,18 +130,20 @@ export default function Home() {
       answers: [],
       isComplete: false,
     });
-    setPlayerName("");
     setStartTime(Date.now());
     setShowRanking(false);
   };
 
   const handleSaveScore = async () => {
-    if (!playerName.trim()) return;
+    if (!user) {
+      toast.error('로그인이 필요합니다.');
+      return;
+    }
     
     try {
       const timeSpent = Math.floor((Date.now() - startTime) / 1000);
       const newScore = await saveScore({
-        player_name: playerName.trim(),
+        player_name: user.user_metadata.full_name || '사용자',
         score: quizState.score,
         total_questions: quizzes.length,
         date: new Date().toISOString(),
@@ -172,41 +174,14 @@ export default function Home() {
     );
   }
 
-  if (quizState.isComplete) {
-    return (
-      <div className="container max-w-2xl mx-auto p-4 min-h-screen flex flex-col items-center justify-center">
-        <div className="text-center space-y-6">
-          <h1 className="text-2xl md:text-3xl font-bold">퀴즈 완료!</h1>
-          <p className="text-xl md:text-2xl">
-            최종 점수: {quizState.score} / {quizzes.length}
-          </p>
-          <div className="space-y-4">
-            <Input
-              placeholder="이름을 입력하세요"
-              value={playerName}
-              onChange={(e) => setPlayerName(e.target.value)}
-              className="max-w-xs mx-auto"
-            />
-            <div className="flex gap-4 justify-center">
-              <Button onClick={handleSaveScore} size="lg" disabled={!playerName.trim()}>
-                점수 저장하기
-              </Button>
-              <Button onClick={handleRestart} size="lg" variant="outline">
-                다시 시작하기
-              </Button>
-            </div>
-          </div>
-        </div>
-      </div>
-    );
-  }
-
   return (
     <div className="container max-w-2xl mx-auto p-4 min-h-screen">
       <div className="space-y-6">
         <div className="space-y-4">
           <div className="flex justify-between items-center">
-            <h1 className="text-xl md:text-2xl font-bold">퀴즈</h1>
+            <div className="flex items-center gap-4">
+              <h1 className="text-xl md:text-2xl font-bold">퀴즈</h1>
+            </div>
             <p className="text-sm md:text-base">
               {quizState.currentQuestionIndex + 1} / {quizzes.length}
             </p>
