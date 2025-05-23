@@ -11,7 +11,7 @@ import { saveScore, getScores } from "@/lib/score";
 import { getQuizzes } from "@/lib/quiz";
 import { toast } from "sonner";
 import { useAuth } from "@/lib/auth-context";
-import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
+import { LoginButton } from "@/components/auth/LoginButton";
 
 const TIME_PER_QUESTION = 30; // 각 문제당 30초
 
@@ -53,6 +53,20 @@ export default function Home() {
       <div className="container max-w-2xl mx-auto p-4 min-h-screen flex items-center justify-center">
         <div className="text-center">
           <h2 className="text-xl font-semibold">로딩 중...</h2>
+        </div>
+      </div>
+    );
+  }
+
+  if (!user) {
+    return (
+      <div className="container max-w-2xl mx-auto p-4 min-h-screen flex items-center justify-center">
+        <div className="text-center space-y-6">
+          <h1 className="text-2xl md:text-3xl font-bold">오늘의 퀴즈</h1>
+          <p className="text-lg text-muted-foreground">
+            퀴즈를 풀기 위해서는 로그인이 필요합니다.
+          </p>
+          <LoginButton />
         </div>
       </div>
     );
@@ -180,7 +194,7 @@ export default function Home() {
         <div className="space-y-4">
           <div className="flex justify-between items-center">
             <div className="flex items-center gap-4">
-              <h1 className="text-xl md:text-2xl font-bold">퀴즈</h1>
+              <h1 className="text-xl md:text-2xl font-bold">오늘의 퀴즈</h1>
             </div>
             <p className="text-sm md:text-base">
               {quizState.currentQuestionIndex + 1} / {quizzes.length}
