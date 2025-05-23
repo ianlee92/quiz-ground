@@ -1,17 +1,25 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { supabase } from '@/lib/supabase';
 import { toast } from 'sonner';
 
 export default function AuthCallbackPage() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     const handleAuthCallback = async () => {
       try {
+        // URL에서 토큰 파라미터 제거
+        const hash = window.location.hash;
+        if (hash) {
+          // 현재 URL에서 해시 부분 제거
+          window.history.replaceState(null, '', window.location.pathname);
+        }
+
         const { data: { session }, error } = await supabase.auth.getSession();
         
         if (error) {
