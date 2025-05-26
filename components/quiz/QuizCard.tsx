@@ -26,13 +26,21 @@ export function QuizCard({ quiz, selectedAnswer, onAnswerSelect, showExplanation
           value={selectedAnswer === null ? undefined : selectedAnswer.toString()}
           onValueChange={(value) => onAnswerSelect(parseInt(value))}
           className="space-y-3"
+          disabled={selectedAnswer !== null}
         >
           {quiz.options.map((option, index) => (
             <div key={index} className="flex items-center space-x-2">
-              <RadioGroupItem value={index.toString()} id={`option-${index}`} />
+              <RadioGroupItem 
+                value={index.toString()} 
+                id={`option-${index}`}
+                disabled={selectedAnswer !== null}
+              />
               <Label
                 htmlFor={`option-${index}`}
-                className="text-base md:text-lg cursor-pointer"
+                className={cn(
+                  "text-base md:text-lg cursor-pointer",
+                  selectedAnswer !== null && "cursor-not-allowed"
+                )}
               >
                 {option}
               </Label>
