@@ -169,6 +169,7 @@ export default function Home() {
         total_questions: quizzes.length,
         date: new Date().toISOString(),
         time_spent: timeSpent,
+        avatar_url: user.user_metadata.avatar_url || '',
       });
       
       if (newScore) {

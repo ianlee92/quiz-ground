@@ -24,4 +24,5 @@ export interface ScoreRecord {
   date: string;
   time_spent: number;
   created_at?: string;
+  avatar_url?: string;
 } 
