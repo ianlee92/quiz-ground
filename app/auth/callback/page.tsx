@@ -12,12 +12,7 @@ export default function AuthCallbackPage() {
   useEffect(() => {
     const handleAuthCallback = async () => {
       try {
-        // URL에서 토큰 파라미터 제거
-        const hash = window.location.hash;
-        if (hash) {
-          // 현재 URL에서 해시 부분 제거
-          window.history.replaceState(null, '', window.location.pathname);
-        }
+
 
         const { data: { session }, error } = await supabase.auth.getSession();
         
