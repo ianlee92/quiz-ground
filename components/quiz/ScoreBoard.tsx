@@ -1,30 +1,21 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ScoreRecord } from "@/types/quiz";
 import { Trophy } from "lucide-react";
+import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 
 interface ScoreBoardProps {
   scores: ScoreRecord[];
 }
 
 export function ScoreBoard({ scores }: ScoreBoardProps) {
-  // 12시간 이내의 점수만 필터링
-  const recentScores = scores.filter(score => {
-    const scoreDate = new Date(score.date);
-    const twelveHoursAgo = new Date();
-    twelveHoursAgo.setHours(twelveHoursAgo.getHours() - 12);
-    return scoreDate >= twelveHoursAgo;
-  });
-
   // 각 플레이어의 최고 점수만 선택
-  const highestScores = recentScores.reduce((acc, current) => {
+  const highestScores = scores.reduce((acc, current) => {
     const existingScore = acc.find(score => score.player_name === current.player_name);
     
     if (!existingScore) {
-      // 새로운 플레이어의 점수 추가
       return [...acc, current];
     }
     
-    // 기존 점수와 비교하여 더 높은 점수만 유지
     if (current.score > existingScore.score || 
         (current.score === existingScore.score && current.time_spent < existingScore.time_spent)) {
       return acc.map(score => 
@@ -43,12 +34,20 @@ export function ScoreBoard({ scores }: ScoreBoardProps) {
     return b.score - a.score;
   });
 
+  // 오늘 날짜 포맷팅
+  const today = new Date().toLocaleDateString('ko-KR', {
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric',
+    weekday: 'long'
+  });
+
   return (
     <Card className="w-full max-w-2xl mx-auto">
       <CardHeader>
         <div className="flex items-center gap-2">
           <Trophy className="w-6 h-6 text-yellow-500" />
-          <CardTitle>오늘의 랭킹</CardTitle>
+          <CardTitle>{today} 랭킹</CardTitle>
         </div>
       </CardHeader>
       <CardContent>
@@ -65,11 +64,25 @@ export function ScoreBoard({ scores }: ScoreBoardProps) {
                   <div className="w-8 h-8 flex items-center justify-center rounded-full bg-primary text-primary-foreground font-bold">
                     {index + 1}
                   </div>
-                  <div>
-                    <p className="font-medium">{score.player_name}</p>
-                    <p className="text-sm text-muted-foreground">
-                      {new Date(score.date).toLocaleDateString()}
-                    </p>
+                  <div className="flex items-center gap-3">
+                    <Avatar className="h-8 w-8">
+                      <AvatarImage 
+                        src={score.avatar_url || ''} 
+                        alt={score.player_name}
+                      />
+                      <AvatarFallback>
+                        {score.player_name.slice(0, 2).toUpperCase()}
+                      </AvatarFallback>
+                    </Avatar>
+                    <div>
+                      <p className="font-medium">{score.player_name}</p>
+                      <p className="text-sm text-muted-foreground">
+                        {new Date(score.date).toLocaleTimeString('ko-KR', {
+                          hour: '2-digit',
+                          minute: '2-digit'
+                        })}
+                      </p>
+                    </div>
                   </div>
                 </div>
                 <div className="text-right">

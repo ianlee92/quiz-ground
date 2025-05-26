@@ -3,11 +3,12 @@ import { ScoreRecord } from '@/types/quiz'
 
 export async function saveScore(score: Omit<ScoreRecord, 'id' | 'created_at'>): Promise<ScoreRecord | null> {
   try {
-    // 먼저 해당 플레이어의 최고 점수를 확인
+    // 해당 플레이어의 같은 날짜 최고 점수를 확인
     const { data: existingScores, error: fetchError } = await supabase
       .from('scores')
       .select('*')
       .eq('player_name', score.player_name)
+      .eq('date', score.date) // 같은 날짜의 점수만 확인
       .order('score', { ascending: false })
       .order('time_spent', { ascending: true })
       .limit(1)
@@ -76,14 +77,13 @@ export async function saveScore(score: Omit<ScoreRecord, 'id' | 'created_at'>): 
 
 export async function getScores(): Promise<ScoreRecord[]> {
   try {
-    // 12시간 전의 시간을 계산
-    const twelveHoursAgo = new Date()
-    twelveHoursAgo.setHours(twelveHoursAgo.getHours() - 12)
-
+    // 오늘 날짜의 점수만 가져오기
+    const today = new Date().toISOString().split('T')[0]
+    
     const { data, error } = await supabase
       .from('scores')
       .select('*')
-      .gte('date', twelveHoursAgo.toISOString()) // 12시간 이내의 점수만 가져오기
+      .eq('date', today) // 오늘 날짜의 점수만 필터링
       .order('score', { ascending: false })
       .order('time_spent', { ascending: true })
 
