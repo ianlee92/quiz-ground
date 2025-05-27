@@ -29,14 +29,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     const checkSession = async () => {
       try {
         const { data: { session }, error } = await supabase.auth.getSession();
-        console.log('Initial session check:', session);
         
         if (error) {
           throw error;
         }
 
         if (session?.user && mounted) {
-          console.log('Setting initial user:', session.user);
           setUser(session.user as User);
         }
       } catch (error) {
@@ -55,21 +53,16 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
     // 인증 상태 변경 구독
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
-      console.log('Auth state changed:', event, session);
-      
       if (!mounted) return;
 
       if (event === 'SIGNED_IN' && session?.user) {
-        console.log('Setting user on SIGNED_IN:', session.user);
         setUser(session.user as User);
         router.push('/');  // 메인 페이지로 리다이렉트
       } else if (event === 'SIGNED_OUT') {
-        console.log('Clearing user on SIGNED_OUT');
         setUser(null);
         router.push('/');
       } else if (event === 'INITIAL_SESSION') {
         if (session?.user) {
-          console.log('Setting user on INITIAL_SESSION:', session.user);
           setUser(session.user as User);
         }
       }
